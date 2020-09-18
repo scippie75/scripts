@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Font used for icons is [https://www.icofont.com](icofont)
+# Font used for icons is [icofont](https://www.icofont.com)
 
 import os, psutil, time, json
 from datetime import datetime
