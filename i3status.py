@@ -31,6 +31,11 @@ def get_wifi_signal():
   else:
     return None
 
+def get_brightness():
+  with open('/home/dirk/.brightness') as f:
+    val = f.readline()
+  return float(val) * 100
+
 batt_status_icon = {
   'Charging': '',
   'Discharging': '',
@@ -56,6 +61,7 @@ if __name__ == '__main__':
   print('{ "version": 1, "stop_signal": 10, "cont_signal": 12, "click_events": true }')
   print('[')
   while True:
+    brightness = get_brightness()
     cpu_percent = psutil.cpu_percent()
     available_memory = get_available_memory()
     free_space_root = get_free_space('/')
@@ -67,6 +73,7 @@ if __name__ == '__main__':
     clock = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
     j = [
+      ji('brightness', 'percent', '', '{:.0f}%'.format(brightness)),
       ji('cpu', 'percent', '', '{:.1f}%'.format(cpu_percent), green=cpu_percent > 10, yellow=cpu_percent > 30, red=cpu_percent > 85),
       ji('memory', 'available', '', '{:.1f}GiB'.format(available_memory), green=available_memory < 25, yellow=available_memory < 10, red = available_memory < 2),
       ji('disk', 'root', ' /', '{:.1f}GiB'.format(free_space_root), green=free_space_root < 100, yellow=free_space_root < 30, red=free_space_root < 2),
