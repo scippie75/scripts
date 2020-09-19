@@ -28,7 +28,7 @@ if len(sys.argv) == 2:
   else:
     brightness = float(p)
 
-brightness = max(0.0, min(1.0, brightness))
+brightness = max(0.2, min(1.0, brightness))
 
 subprocess.run(['xrandr', '--output', display, '--brightness', str(brightness)])
 
