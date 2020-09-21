@@ -31,6 +31,16 @@ def get_wifi_signal():
   else:
     return None
 
+def get_network_status():
+  with subprocess.Popen(['ip', 'a', 's', 'enp6s0'], stdout=subprocess.PIPE) as p:
+    data = p.stdout.readlines()
+  if len(data) < 3:
+    return False
+  if 'DOWN' in data[0].decode():
+    return False
+  s = data[2].decode()
+  return s[s.find('inet') + 5:s.find('/')]
+
 def get_brightness():
   with open('/home/dirk/.brightness') as f:
     val = f.readline()
@@ -66,8 +76,10 @@ if __name__ == '__main__':
     available_memory = get_available_memory()
     free_space_root = get_free_space('/')
     free_space_data = get_free_space('/data')
+    #free_space_home = get_free_space('/home')
     wifi_signal = get_wifi_signal()
     wifi_signal_status = '{:.0f}%'.format(wifi_signal) if wifi_signal else 'down'
+    #network = get_network_status()
     batt = get_battery_status()
     batt_icon = batt_status_icon[batt[0]] if batt[0] in batt_status_icon else batt_status_icon['Unknown']
     clock = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
@@ -78,6 +90,8 @@ if __name__ == '__main__':
       ji('memory', 'available', '', '{:.1f}GiB'.format(available_memory), green=available_memory < 25, yellow=available_memory < 10, red = available_memory < 2),
       ji('disk', 'root', ' /', '{:.1f}GiB'.format(free_space_root), green=free_space_root < 100, yellow=free_space_root < 30, red=free_space_root < 2),
       ji('disk', 'data', ' /data', '{:.1f}GiB'.format(free_space_data), green=free_space_data < 100, yellow=free_space_data < 30, red=free_space_data < 2),
+      #ji('disk', 'home', ' /home', '{:.1f}GiB'.format(free_space_home), green=free_space_home < 100, yellow=free_space_home < 30, red=free_space_home < 2),
+      #ji('network', 'status', ' ', network if network else 'down', red=not network),
       ji('wifi', 'signal', '', wifi_signal_status, green=wifi_signal and wifi_signal < 70, yellow=wifi_signal and wifi_signal < 50, red=wifi_signal and wifi_signal < 30, gray=not wifi_signal),
       ji('battery', 'charge', batt_icon, f'{batt[1]}%', green=batt[0] != 'Full', yellow=batt[1] < 50, red=batt[1] < 20),
       ji('clock', 'current', '', clock)
