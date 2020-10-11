@@ -2,7 +2,7 @@
 
 # Font used for icons is [icofont](https://www.icofont.com)
 
-import os, psutil, time, json
+import os, psutil, time, json, subprocess
 from datetime import datetime
 
 def get_free_space(path):
@@ -45,6 +45,22 @@ def get_brightness():
   with open('/home/dirk/.brightness') as f:
     val = f.readline()
   return float(val) * 100
+
+def get_volume():
+  # You need the pamixer util for this to work
+  try:
+    with subprocess.Popen(['/usr/bin/pamixer', '--get-volume', '--get-mute'], stdout=subprocess.PIPE) as p:
+      data = p.stdout.readlines()[0].decode().strip().split(' ')
+  except:
+    return None
+
+  try:
+    mute = False if data[0] == 'false' else True
+    volume = int(data[1])
+  except:
+    return None
+
+  return (mute, volume)
 
 def get_webcamstatus():
   try:
@@ -92,9 +108,15 @@ if __name__ == '__main__':
     batt_icon = batt_status_icon[batt[0]] if batt[0] in batt_status_icon else batt_status_icon['Unknown']
     clock = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
     webcam = get_webcamstatus()
+    vol = get_volume()
+    muted = True if vol and vol[0] else False
+    volume = 'unknown' if not vol else f'{vol[1]}%'
+    volume_icon = '' if muted else ''
+    volume_txt = 'mute' if muted else volume
 
     j = [
       ji('webcam', 'status', '', 'up' if webcam else 'down', gray=not webcam),
+      ji('volume', 'status', volume_icon, volume_txt, red=vol and vol[1] >= 90, yellow=vol and vol[1] >= 50, gray=muted),
       ji('brightness', 'percent', '', '{:.0f}%'.format(brightness)),
       ji('cpu', 'percent', '', '{:.1f}%'.format(cpu_percent), green=cpu_percent > 10, yellow=cpu_percent > 30, red=cpu_percent > 85),
       ji('memory', 'available', '', '{:.1f}GiB'.format(available_memory), green=available_memory < 25, yellow=available_memory < 10, red = available_memory < 2),
