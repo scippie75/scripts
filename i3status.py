@@ -46,6 +46,14 @@ def get_brightness():
     val = f.readline()
   return float(val) * 100
 
+def get_webcamstatus():
+  try:
+    count = len(os.listdir('/sys/class/video4linux/'))
+  except:
+    return False
+  else:
+    return True if count > 0 else False
+
 batt_status_icon = {
   'Charging': '',
   'Discharging': '',
@@ -83,8 +91,10 @@ if __name__ == '__main__':
     batt = get_battery_status()
     batt_icon = batt_status_icon[batt[0]] if batt[0] in batt_status_icon else batt_status_icon['Unknown']
     clock = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+    webcam = get_webcamstatus()
 
     j = [
+      ji('webcam', 'status', '', 'up' if webcam else 'down', gray=not webcam),
       ji('brightness', 'percent', '', '{:.0f}%'.format(brightness)),
       ji('cpu', 'percent', '', '{:.1f}%'.format(cpu_percent), green=cpu_percent > 10, yellow=cpu_percent > 30, red=cpu_percent > 85),
       ji('memory', 'available', '', '{:.1f}GiB'.format(available_memory), green=available_memory < 25, yellow=available_memory < 10, red = available_memory < 2),
