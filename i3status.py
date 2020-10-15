@@ -70,6 +70,17 @@ def get_webcamstatus():
   else:
     return True if count > 0 else False
 
+def get_vpnstatus():
+  try:
+    with subprocess.Popen(['/usr/bin/systemctl', 'status', 'apvpn'], stdout=subprocess.PIPE) as p:
+      data = p.stdout.readlines()
+      for line in [ line.decode().strip() for line in data ]:
+        if 'Active: active' in line:
+          return True
+  except:
+    pass
+  return False
+
 batt_status_icon = {
   'Charging': '',
   'Discharging': '',
@@ -101,8 +112,11 @@ if __name__ == '__main__':
     free_space_root = get_free_space('/')
     free_space_data = get_free_space('/data')
     #free_space_home = get_free_space('/home')
+    vpn_open = get_vpnstatus()
     wifi_signal = get_wifi_signal()
     wifi_signal_status = '{:.0f}%'.format(wifi_signal) if wifi_signal else 'down'
+    if vpn_open:
+      wifi_signal_status += ' AP-VPN'
     #network = get_network_status()
     batt = get_battery_status()
     batt_icon = batt_status_icon[batt[0]] if batt[0] in batt_status_icon else batt_status_icon['Unknown']
